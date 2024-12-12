@@ -1,23 +1,31 @@
-# server/Dockerfile
-# ベースイメージ
-FROM golang:1.16
+# Goのイメージを使用
+FROM golang:1.16 AS builder
 
-# 作業ディレクトリの設定
+# 作業ディレクトリを設定
 WORKDIR /app
 
-# Goモジュールのコピー
+# go.modとgo.sumをコピー
 COPY go.mod ./
 COPY go.sum ./
+
+# 依存関係をダウンロード
 RUN go mod download
 
-# アプリのソースコードをコピー
+# アプリケーションのソースコードをコピー
 COPY . .
 
-# アプリのビルド
-RUN go build -o main .
+# アプリケーションをビルド
+RUN CGO_ENABLED=0 GOOS=linux go build -o main .
 
-# ポートの公開
-EXPOSE 8080
+# 実行用のイメージを作成
+FROM alpine:latest
 
-# アプリの起動
+# 必要なパッケージをインストール
+RUN apk --no-cache add ca-certificates
+
+# ビルドしたバイナリをコピー
+WORKDIR /root/
+COPY --from=builder /app/main .
+
+# アプリケーションを実行
 CMD ["./main"]
