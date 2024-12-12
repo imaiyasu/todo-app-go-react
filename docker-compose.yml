@@ -1,12 +1,31 @@
+version: '3.8'
+
 services:
+
   client:
-    build:
-      context: ./client
+    build: ./client
     ports:
       - "3000:3000"
-  
+
   server:
     build:
-      context: ./server
+      context: ./server  # serverディレクトリを指定
+      dockerfile: Dockerfile
     ports:
       - "8080:8080"
+    environment:
+      - DB_USER=ss27914
+      - DB_PASSWORD=meswSakeSaba39%
+      - DB_NAME=todo_app
+      - DB_HOST=db
+    depends_on:
+      - db
+
+  db:
+    image: postgres:latest
+    environment:
+      POSTGRES_USER: ss27914
+      POSTGRES_PASSWORD: meswSakeSaba39%
+      POSTGRES_DB: todo_app
+    ports:
+      - "5433:5432" # 5433に変更
